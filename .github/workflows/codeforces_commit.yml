@@ -1,18 +1,53 @@
-name: Codeforces Auto-Commit
+name: Codeforces Auto-Sync
+
 on:
-  # 🚫 Disabled automatic triggers
-  # schedule:
-  #   - cron: "*/15 * * * *"  # Disabled auto-run
-  workflow_dispatch:  # ✅ Only runs manually
+  schedule:
+    # Runs every 15 minutes
+    - cron: "*/15 * * * *"
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  CF_HANDLE: Marslai24
+  TARGET_BRANCH: main
 
 jobs:
-  fetch-and-commit:
-    if: true  # 🚫 Prevent job from running at all
+  sync-submissions:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    
     steps:
-      - name: Do nothing
-        run: echo "Auto commit temporarily disabled."
-env:
-  CF_HANDLE: Marslai24
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Fetch Codeforces submissions
+        env:
+          CF_HANDLE: ${{ env.CF_HANDLE }}
+        run: python fetch_submissions.py
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push changes
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No new submissions to commit"
+          else
+            git commit -m "🚀 Auto-sync: Add new Codeforces submissions [$(date +'%Y-%m-%d %H:%M')]"
+            git push origin ${{ env.TARGET_BRANCH }}
+          fi

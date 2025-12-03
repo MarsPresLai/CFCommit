@@ -4,8 +4,12 @@ import os
 from datetime import datetime
 import time
 
-# Your Codeforces handle - REPLACE THIS
-HANDLE = ""
+# Your Codeforces handle - from environment variable or default
+HANDLE = os.environ.get("CF_HANDLE", "")
+
+if not HANDLE:
+    print("Error: CF_HANDLE environment variable not set")
+    exit(1)
 
 # Number of recent submissions to check
 COUNT = 10
