@@ -14,3 +14,5 @@ jobs:
     steps:
       - name: Do nothing
         run: echo "Auto commit temporarily disabled."
+env:
+  CF_HANDLE: Marslai24
